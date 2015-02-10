@@ -4,10 +4,14 @@ import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.kroll.common.Log;
+
 import android.content.Intent;
 import android.app.Activity;
-import org.appcelerator.titanium.util.TiRHelper;
+
 import android.content.ComponentName;
+import android.content.pm.*;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.drawable.*;
 
 @Kroll.module(name="Appshortcut", id="ti.ikruglik.appshortcut")
 public class AppshortcutModule extends KrollModule
@@ -24,28 +28,40 @@ public class AppshortcutModule extends KrollModule
 	}
 
 	@Kroll.method
-	public boolean createShortcut(String shortcutname){
+	public boolean createShortcut(){
 		TiApplication appContext = TiApplication.getInstance();
 		Activity appActivity = TiApplication.getAppRootOrCurrentActivity();
-		
+				
 		if (appActivity == null) return false;
 		
 		Intent shortcutIntent = new Intent("com.android.launcher.action.INSTALL_SHORTCUT");
 
-		ComponentName comp = new ComponentName(appContext.getPackageName(), "."+appActivity.getLocalClassName());  
-	    shortcutIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, new Intent(Intent.ACTION_MAIN).setComponent(comp));  
+		ComponentName appComp = new ComponentName(appContext.getPackageName(), "."+appActivity.getLocalClassName());  
+	    shortcutIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, new Intent(Intent.ACTION_MAIN).setComponent(appComp));  
 	    
 	    shortcutIntent.putExtra("duplicate", false);
-	    shortcutIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, shortcutname);
 	    
 	    try {
-	    	shortcutIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(appContext, TiRHelper.getApplicationResource("drawable.appicon")));
-	    } catch (TiRHelper.ResourceNotFoundException e) {
-	        Log.e("[ERROR] EXCEPTION", "EXTRA_SHORTCUT_ICON_RESOURCE -- RESOURCE NOT FOUND");
-	        return false;
-	    }	    
-	    
+			ApplicationInfo appInfo = appContext.getPackageManager().getApplicationInfo(appContext.getPackageName(), 0);  
+			PackageManager appPM = appContext.getPackageManager();
+			
+			String appName = appPM.getApplicationLabel(appInfo).toString();
+		    shortcutIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, appName);
+		    
+		    Drawable appIcon = appPM.getApplicationIcon(appInfo);	    
+		    BitmapDrawable appIconBitmap = (BitmapDrawable) appIcon;
+		    shortcutIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON, appIconBitmap.getBitmap());
+		}
+		catch (NameNotFoundException e)
+		{
+			Log.e("[EXCEPTION]", "NameNotFoundException");
+			return false;
+		}
+			    
 	    appContext.sendBroadcast(shortcutIntent);
+	    
+	    //setResult(RESULT_OK, shortcutIntent);
+	    //finish();	    
 	    return true;
 	}
 
