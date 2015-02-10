@@ -1,39 +1,32 @@
-// This is a test harness for your module
-// You should do something interesting in this harness
-// to test out the module and to provide instructions
-// to users on how to use it by example.
-
-
-// open a single window
 var win = Ti.UI.createWindow({
-	backgroundColor:'white'
+    backgroundColor:'white'
 });
-var label = Ti.UI.createLabel();
-win.add(label);
 win.open();
 
-// TODO: write your module tests here
 var appshortcut = require('ti.ikruglik.appshortcut');
-Ti.API.info("module is => " + appshortcut);
 
-label.text = appshortcut.example();
+var result;
 
-Ti.API.info("module exampleProp is => " + appshortcut.exampleProp);
-appshortcut.exampleProp = "This is a test value";
+var buttonCreate = Ti.UI.createButton({
+    top: 50,
+    title: 'Create shortcut' 
+});
 
-if (Ti.Platform.name == "android") {
-	var proxy = appshortcut.createExample({
-		message: "Creating an example Proxy",
-		backgroundColor: "red",
-		width: 100,
-		height: 100,
-		top: 100,
-		left: 150
-	});
+buttonCreate.addEventListener('click', function ()
+{
+    result = appshortcut.createShortcut();
+    alert('Shortcut created: '+result);    
+});
+win.add(buttonCreate);
 
-	proxy.printMessage("Hello world!");
-	proxy.message = "Hi world!.  It's me again.";
-	proxy.printMessage("Hello world!");
-	win.add(proxy);
-}
+var buttonDelete = Ti.UI.createButton({
+    top: 100,
+    title: 'Delete shortcut' 
+});
+win.add(buttonDelete);
 
+buttonDelete.addEventListener('click', function ()
+{
+    result = appshortcut.deleteShortcut();
+    alert('Shortcut deleted: '+result);    
+});
